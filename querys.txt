@@ -1,0 +1,79 @@
+1. Title,name and last name of the director of each movie with more than one part. Sorted in the way they should be seen.
+
+SELECT m.title movie_title, p.name director_name, p.last_name director_last_name
+FROM movie m
+INNER JOIN person p ON m.director_id = p.person_id
+WHERE m.weight IS NOT NULL
+ORDER BY m.weight ASC;
+
+
+2. Movie titles in which the director is also the lead actor.
+
+SELECT m.title movie_title
+FROM movie m
+INNER JOIN movie_actors a ON m.director_id = a.person_id;
+
+
+3. Titles of all movies, along with the number of actors acting in each one. Sorted by amount of actors in descending order.
+
+SELECT m.title movie_title, COUNT(a.person_id) AS number_of_actors
+FROM movie m
+LEFT JOIN movie_actors a ON m.movie_id = a.movie_id
+GROUP BY m.movie_id
+ORDER BY COUNT(*) DESC;
+
+
+4. Titles of movies that don't have any actors.
+
+SELECT m.title movie_title
+FROM movie m
+LEFT JOIN movie_actors a ON m.movie_id = a.movie_id
+WHERE a.movie_id IS NULL;
+
+
+5. Name and last name of actors who act in more than one movie.
+
+SELECT p.name, p.last_name
+FROM person p
+INNER JOIN movie_actors a ON p.person_id = a.person_id
+GROUP BY p.person_id
+HAVING COUNT(*) > 1;
+
+
+6. Average duration(in minutes) of movies which premiere was before the year 2000.
+
+SELECT AVG(duration) AS avg_duration
+FROM movie m
+WHERE m.premiere < 2000;
+
+
+7. Titles of movies that won at least one Oscar and their primary language isn't English.
+
+SELECT m.title movie_title
+FROM movie m
+INNER JOIN movie_languages_spoken mls ON m.movie_id = mls.movie_id
+INNER JOIN language l ON mls.language_id = l.language_id
+WHERE m.oscars_won > 0 AND l.language_name <> 'English'
+GROUP BY m.movie_id
+HAVING COUNT(*) = 1;
+
+
+8. Titles of movies (other than Star Wars) that featured an actor from the Star Wars saga.
+
+SELECT m.title movie_title
+FROM movie m
+INNER JOIN movie_actors a ON m.movie_id = a.movie_id
+WHERE a.person_id IN(
+SELECT  a.person_id
+FROM movie_actors a
+INNER JOIN movie m ON m.movie_id = a.movie_id
+WHERE m.title LIKE 'Star Wars%') 
+AND m.title NOT LIKE 'Star Wars%';
+
+
+9. Amount of movies grouped by genre.
+
+SELECT g.genre_name genre, COUNT(*) AS amount
+FROM genre g
+INNER JOIN movie_genres mg ON g.genre_id = mg.genre_id
+GROUP BY mg.genre_id;
